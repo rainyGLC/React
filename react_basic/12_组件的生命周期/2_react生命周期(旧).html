@@ -90,6 +90,8 @@
     }
   }
    
+
+  //父组件
   class A extends React.Component {
     //初始化状态
     state = {carName:'奔驰'}
@@ -107,14 +109,33 @@
     }
   }
 
+  //子组件
   class B extends React.Component{
+    //第一次不算，组件将要接收新的props的钩子
+    componentWillReceiveProps() {
+      console.log('B---componentWillReceiveProps')
+    }
+    //控制组件更新的"阀门"
+    shouldComponentUpdate(){
+      console.log('B----shouldComponentUpdate')
+      return true
+    }
+    //组件将要更新
+    componentWillUpdate(){
+      console.log('B----componentWillUpdate')
+    }
+     //组件更新完毕的钩子
+    componentDidUpdate(){
+      console.log('B----componentDidUpdate')
+    }
+
     render () {
+      console.log('B---render')
       return (
         <div>我是B组件，接收到的车是：{this.props.carName}</div>
       )
     }
   }
-
 
 
   //渲染组件
