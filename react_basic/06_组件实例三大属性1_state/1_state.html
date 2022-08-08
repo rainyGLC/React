@@ -1,0 +1,60 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>state</title>
+</head>
+<body>
+  <!-- 准备好一个"容器" -->
+  <div id="test"></div>
+  <!-- 引入react核心库 -->
+  <script type="text/javascript" src="../js/react.development.js"></script>
+  <!-- 引入react-dom,用于支持react操作DOM -->
+  <script type="text/javascript" src="../js/react-dom.development.js"></script>
+  <!-- 引入babel,用于将jsx转为js -->
+  <script type="text/javascript" src="../js/babel.min.js"></script>
+  
+  <script type="text/babel">  //此处一定要写babel
+  //1.创建组件
+  class Weather extends React.Component{
+    //构造器调用了几次？ ——— 1次
+    constructor(props){
+      console.log('constructor')
+      super(props)
+      //初始化状态
+      this.state = {isHot:false,wind:'微风'}
+      //解决changeWeather中this指向问题
+      //找到原型的changeWeather，根据changeWeather函数创建了changeWeather1的函数，并且将实例对像的this赋值过去
+      this.changeWeather1 = this.changeWeather.bind(this);
+    }
+    //render调用几次？ ——— 1+n次 1是初始化的那次,n是状态更新的次数
+    render(){ //点几次调几次
+      console.log('render')
+      console.log(this);
+      const {isHot,wind} = this.state
+      //如果加changeWeather(),就是将函数的回调值放入这个地方
+      //this.changeWeather这里面加入this,并不是调用，只不过是找到了changeWeather这个函数，在调用的时候相当于直接调用，并不是实例对象的调用
+      return <h1 onClick={this.changeWeather1}>今天天气很{isHot ? '炎热' : '凉爽'},{wind}</h1>
+    }
+    //自定义方法
+    changeWeather(){
+      //changeWeather 放在哪里？ -----Weather的原型对象上，供实例使用
+      //changeWeather是作为onCick的回调，所以不是通过实例调用的，是直接调用
+      //类中的方法默认开启了局部的严格模式，所以changeWeather中的this为undefined
+      
+      //获取原来的isHot值
+      const isHot = this.state.isHot
+      //严重注意：状态必须通过setState进行更新，且更新是一种合并，不是替换
+      this.setState({isHot:!isHot})
+      //严重注意,状态(state)不可直接更改，下面这行就是直接更改
+      // this.state.isHot = !isHot   //这是错误的写法
+    }
+  }
+  //2.渲染组件到页面
+  ReactDOM.render(<Weather />,document.getElementById('test'))
+  //react 如何绑定事件
+
+  </script>
+
+
+</body>
+</html>
