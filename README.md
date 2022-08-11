@@ -609,5 +609,84 @@ saveName = (event) =>{
 ## 生命周期(旧)
 ![旧生命周期](https://raw.githubusercontent.com/rainyGLC/React/main/react_basic/02_%E5%8E%9F%E7%90%86%E5%9B%BE/react%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F(%E6%97%A7).png)
 
+生命周期的三个阶段（旧）
+	1. 初始化阶段: 由ReactDOM.render()触发---初次渲染
+      1.	constructor()
+      2.	componentWillMount()
+      3.	render()   =====>必须
+      4.	componentDidMount() ====>常用
+      （一般在这个钩子中做一些初始化的事，例如：开启定时器、发送网络请求、订阅消息
+
+	2. 更新阶段: 由组件内部this.setSate()或父组件重新render触发
+      1.	shouldComponentUpdate()
+      2.	componentWillUpdate()
+      3.	render()
+      4.	componentDidUpdate()
+	3. 卸载组件: 由ReactDOM.unmountComponentAtNode()触发
+      1.	componentWillUnmount()
+      (一般在这个钩子中做一些shouwei3的事，例如：关闭定时器、取消订阅信息)
+
+```
+ <script type="text/babel">  //此处一定要写babel
+
+  //1.创建组件
+  //生命周期回调函数 <=> 生命周期钩子函数 <=> 生命周期函数 <=> 生命周期钩子
+  class Life extends React.Component {
+    state = {opacity:1}
+    death = () => {
+    //  //清除定时器
+    //  clearInterval(this.timer)
+      //卸载组件
+      ReactDOM.unmountComponentAtNode(document.getElementById('test'))
+    }
+    //组件挂完毕
+    componentDidMount(){
+      console.log('@')
+      this.timer = setInterval(() => {
+        //获取原状态
+        let {opacity} = this.state
+        //减少0.1
+        opacity -= 0.1
+        if(opacity <= 0)  opacity = 1
+        //设置新的透明度
+        this.setState({opacity})
+      },200)
+    }
+
+    //组件将要卸载
+    componentWillUnmount(){
+        //清除定时器
+      clearInterval(this.timer)
+    }
+
+
+生命周期（新）
+//render初始化、状态更新之后
+    render() {
+      console.log('render')
+      return (
+        <div>
+          <h2 style={{opacity:this.state.opacity}}>React学不会怎么办</h2>
+          <button onClick={this.death}>不活了</button>
+        </div>
+      )
+    }
+  }
+
+  //渲染组件
+  ReactDOM.render(<Life/>,document.getElementById('test'))
+
+
+  </script>
+```
+
+即将废弃的勾子
+1.	componentWillMount
+2.	componentWillReceiveProps
+3.	componentWillUpdate
+现在使用会出现警告，下一个大版本需要加上UNSAFE_前缀才能使用，以后可能会被彻底废弃，不建议使用。
+
+
+
 
 
