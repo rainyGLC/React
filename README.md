@@ -661,24 +661,119 @@ saveName = (event) =>{
 
 
 生命周期（新）
-//render初始化、状态更新之后
+
+```
+  <script type="text/babel">  //此处一定要写babel
+
+  //1.创建组件
+  class Count extends React.Component{
+    
+    //构造器
+    constructor(props) {
+      console.log('Count-constructor')
+      super(props)
+      //初始化状态
+      this.state = {count:0}
+
+    }
+
+    //加1按扭加1
+    add = () =>{
+      //获取原状态
+      const {count} = this.state
+      //更新状态
+      this.setState({count:count +1})
+    }
+    //卸载组件按钮回调
+    death = () => {
+      ReactDOM.unmountComponentAtNode(document.getElementById('test'))
+    }
+
+    //强制更新按钮的回调
+    force = () => {
+      this.forceUpdate()
+    }
+
+
+    
+    //组件将要挂载的钩子
+    UNSAFE_componentWillMount(){
+      console.log('Count-componentWillMount')
+    }
+
+    //组件挂载完毕的钩子
+    componentDidMount(){
+      console.log('Count-componentDidMount')
+    }
+
+    //组件将要卸载的钩子
+    componentWillUnmount(){
+      console.log('Count-compontWillUnmount')
+    }
+    //控制组件更新的"阀门"
+    shouldComponentUpdate(){
+      console.log('Count-shouldComponentUpdate')
+      return true
+    }
+    //组件将要更新
+    UNSAFE_componentWillUpdate(){
+      console.log('Count-componentWillUpdate')
+    }
+     //组件更新完毕的钩子
+    componentDidUpdate(){
+      console.log('Count-componentDidUpdate')
+    }
+
     render() {
-      console.log('render')
+      console.log('Count-render')
+      const {count} = this.state
       return (
         <div>
-          <h2 style={{opacity:this.state.opacity}}>React学不会怎么办</h2>
-          <button onClick={this.death}>不活了</button>
+          <h2>当前求和为:{count}</h2>
+          <button onClick={this.add}>点我+1</button>
+          <button onClick={this.death}>卸载组件</button>
+          <button onClick={this.force}>不更改任何状态中的数据，强制更新一下</button>
+        </div>
+      )
+    }
+  }
+  
+  //父组件A
+  class A extends React.Component {
+    //初始化状态
+    state = {carName:'奔驰'}
+    changeCar = () => {
+      this.setState({carName:'奥拓'})
+    }
+    render () {
+      return (
+        <div>
+          <div>我是A组件</div>
+          <button onClick={this.changeCar}>换车</button>
+          <B carName={this.state.carName}/>
         </div>
       )
     }
   }
 
+  //子组件B
+  class B extends React.Component{
+    //第一次不算，组件将要接收新的props的钩子
+    UNSAFE_componentWillReceiveProps() {
+      console.log('B---componentWillReceiveProps')
+    }
+    render () {
+      console.log('B---render')
+      return (
+        <div>我是B组件，接收到的车是：{this.props.carName}</div>
+      )
+    }
+  }
   //渲染组件
-  ReactDOM.render(<Life/>,document.getElementById('test'))
-
-
+   ReactDOM.render(<Count />,document.getElementById('test'))
   </script>
 ```
+
 
 即将废弃的勾子
 1.	componentWillMount
@@ -689,4 +784,53 @@ saveName = (event) =>{
 ![生命周期(新)](https://raw.githubusercontent.com/rainyGLC/React/main/react_basic/02_%E5%8E%9F%E7%90%86%E5%9B%BE/react%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F(%E6%96%B0).png)
 
 
+生命周期的三个阶段（新）
+1. 初始化阶段: 由ReactDOM.render()触发---初次渲染
+    1.	constructor()
+    2.	getDerivedStateFromProps 
+    3.	render()
+    4.	componentDidMount()
+	2. 更新阶段: 由组件内部this.setSate()或父组件重新render触发
+    1.	getDerivedStateFromProps
+    2.	shouldComponentUpdate()
+    3.	render()
+    4.	getSnapshotBeforeUpdate
+    5.	componentDidUpdate()
+	3. 卸载组件: 由ReactDOM.unmountComponentAtNode()触发
+    1.	componentWillUnmount()
+
+### 重要的钩子
+1.render:初始化渲染或更新渲染调用
+2.componentDidMount:开启监听，发送ajax请求
+3.compontWillUnmount：做一些收尾的工作，如；清理定时器
+
+## React脚手架
+react提供了一个用于创建react项目的脚手架库：create-react-app
+
+### 创建项目并启动
+1.全局安装： npm i -g create-react-app
+2.创建项目： create-react-app hello-react
+3.进入项目文件夹：cd hello-react
+4.启动项目：npm start
+
+## react脚手架项目结构
+
+public ---- 静态资源文件夹
+		favicon.icon ------ 网站页签图标
+		index.html -------- 主页面
+		logo192.png ------- logo图
+		logo512.png ------- logo图
+		manifest.json ----- 应用加壳的配置文件(一些手机壳加壳的配合文件或者图片)
+		robots.txt -------- 爬虫协议文件
+src ---- 源码文件夹
+		App.css -------- App组件的样式
+		App.js --------- App组件
+		App.test.js ---- 用于给App做测试
+		index.css ------ 样式
+		index.js ------- 入口文件
+		logo.svg ------- logo图
+		reportWebVitals.js
+			--- 页面性能分析文件(需要web-vitals库的支持)
+		setupTests.js
+		---- 组件单元测试的文件(需要jest-dom库的支持)
 
