@@ -543,7 +543,7 @@ saveName = (event) =>{
 ```
 
 ### 高阶函数
-
+(如果想传参就需要用高阶函数或箭头函数)
 1.如果函数的参数是函数
 2.如果函数返回一个函数
 
@@ -833,4 +833,564 @@ src ---- 源码文件夹
 			--- 页面性能分析文件(需要web-vitals库的支持)
 		setupTests.js
 		---- 组件单元测试的文件(需要jest-dom库的支持)
+
+
+
+  出现问题：React启动时报Plugin “react“ was conflicted between “package.json ......错误的解决办法。
+  解决方法：首先打开你的package.json文件并通过ctrl + S保存并再次运行后得到解决。
+
+  ### 第一个脚手架应用
+  1.我们保持public中的index.html 不变
+  2.修改src下面的App.js以及indx.js文件
+
+  App.js：【注意：创建好的组件一定要暴露出去】
+  
+  ```
+  //创建“外壳”组件App
+  import React,{Component} from "react";
+  import Hello from "./components/Hello";
+  import Welcome from "./components/Welcome";
+
+  //创建并暴露App组件
+  export default class App extends Component{
+    render(){
+      return(
+        <div>
+          <Hello/>
+          <Welcome/>
+        </div>
+      )
+    }
+  }
+ ```
+
+ index.js :【主要的作用其实就是将App这个组件渲染页面上】
+ ```
+  //引入react核心库
+  import React from "react";
+  //引用ReactDOM
+  // import ReactDOM  from 'react-dom'
+  import ReactDOM from 'react-dom/client';
+  //引入App组件
+  import App from './App'
+
+  //渲染App到页面
+  // ReactDOM.render(<App/>,document.getElementById('root'))
+
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(
+    // <React.StrictMode>
+      <App />
+    // </React.StrictMode>
+  );
+
+ ```
+由于普通的Js和组件都是js，所一最好组件使用jsx去展示
+
+### 样式冲突
+当组件逐渐增多起来的时候，我们发现，组件的样式也是越来越丰富，这样就很有可能产生两个组件中样式名称有可能会冲突，这样会根据引入App这个组件的先后顺序，后面的会覆盖前面的，
+
+为了避免这样的样式冲突，我们采用下面的形式：
+
+1.将css文件名修改： hello.css --- >hello.module.css
+
+2.引入并使用的时候改变方式：
+```
+  import React,{Component} from "react";
+  import hello from './index.module.css'
+
+  export default class Hello extends Component{
+    render(){
+      return <h2 className={hello.title}>Hello,React</h2>
+    }
+  }
+```
+
+## 功能界面的组件化编码流程
+1.拆分组件:拆分界面，抽取组件
+
+2.实现静态组件
+
+3.实现动态组件
+  动态的显示初始化数据
+  数据类型
+  数据名称
+
+保存在哪个组件
+ 交互(从绑定事件监听开始)
+
+
+注意事项：
+
+1.拆分组件、实现静态组件。注意className、style的写法
+
+2.动态初始化列表，如何确定将数据放在哪个组件的state中？
+
+某个组件使用：放在自身的state中
+某些组件使用：放在他们共同的父组件中【状态提升】
+3.关于父子组件之间的通信
+
+```
+App.js
+//创建“外壳”组件App
+import React,{Component} from "react";
+import Header from "./components/Header";
+import List from "./components/List";
+import Footer from "./components/Footer";
+import './App.css'
+
+
+
+//创建并暴露App组件
+export default class App extends Component{
+  //初始化状态
+  state = {todos:[
+    {id:'001',name:'吃饭',done:true},
+    {id:'002',name:'睡觉',done:true},
+    {id:'003',name:'打代码',done:false},
+    {id:'004',name:'逛街',done:true}
+  ]}
+
+  //addTodo用于添加一个todo,接收的参数是todo对象
+  addTodo = (todoObj) => {
+    //获取原todos
+    const {todos} = this.state
+    //追加一个todo
+    const newTodos = [todoObj,...todos]
+    //更新状态
+    this.setState({todos:newTodos})
+  }
+
+  render(){
+    const {todos} = this.state;
+    return(
+      <div className="todo-container">
+        <div className="todo-wrap">
+          <Header addTodo={this.addTodo}/>
+          <List todos={todos}/>
+          <Footer/>
+        </div>
+      </div>
+      
+    )
+  }
+}
+```
+
+父组件给子组件传递数据：通过props传递
+
+```
+List.JSX
+import React, { Component } from 'react'
+import Item from '../Item'
+import './index.css'
+
+export default class List extends Component {
+  render() {
+    const {todos} = this.props
+    return (
+      <ul className="todo-main">
+        {
+          todos.map((todo)=>{
+            return <Item key={todo.id} {...todo}/>
+          })
+        }
+      </ul>
+    )
+  }
+}
+
+```
+
+
+子组件给父组件传递数据：通过props传递，要求父组件提前给子组件传递一个函数
+
+```
+Header.jsx
+
+import React, { Component } from 'react'
+import {nanoid} from 'nanoid'
+import './index.css'
+
+export default class Header extends Component {
+  hanldeKeyup = (event) => {
+    // console.log(event.keyCode); //键盘按下enter的数字
+    //解构赋值获取keyCode，target
+    const{keyCode,target} = event
+    //判断是否是回车案键
+    if(event.keyCode !==13) return
+    //添加的todo名字不能空
+    if(target.value.trim() === ''){
+      alert('输入不能为空')
+      return
+    }
+    //准备好一个todo对象
+    const todoObj = {id:nanoid(),name:target.value,done:false}
+    //将todoObj传递给App
+    this.props.addTodo(todoObj)
+    //清理输入
+    target.value = ''
+
+  }
+
+
+  render() {
+    return (
+      <div className="todo-header">
+        <input onKeyUp={this.hanldeKeyup} type="text" placeholder="请输入你的任务名称，按回车键确认"/>
+      </div>
+    )
+  }
+}
+
+```
+4.注意defaultChecked 和checked区别，defalutChecked只是在初始化的时候执行一次，checked没有这个限制，但是必须添加onChange方法类似的还有：defaultValue 和value
+
+5.状态在哪里，操作状态的方法就在哪里
+
+## react ajax
+1.	React本身只关注于界面, 并不包含发送ajax请求的代码
+2.	前端应用需要通过ajax请求与后台进行交互(json数据)
+3.	react应用中需要集成第三方ajax库(或自己封装)
+ 
+
+### 常用的ajax请求库
+1.	jQuery: 比较重, 如果需要另外引入不建议使用
+
+2.	axios: 轻量级, 建议使用
+1)	封装XmlHttpRequest对象的ajax
+2)	 promise风格
+3)	可以用在浏览器端和node服务器端
+
+在使用的过程中很有可能会出现跨域的问题，这样就应该配置代理。
+
+所谓同源（即指在同一个域）就是两个页面具有相同的协议（protocol），主机（host）和端口号（port）， 当一个请求url的协议、域名、端口三者之间任意一个与当前页面url不同即为跨域 。
+
+那么react通过代理解决跨域问题呢
+
+# react脚手架配置代理总结
+
+
+
+## 方法一
+
+> 在package.json中追加如下配置
+
+```json
+"proxy":"http://localhost:5000"
+```
+
+说明：
+
+1. 优点：配置简单，前端请求资源时可以不加任何前缀。
+2. 缺点：不能配置多个代理。
+3. 工作方式：上述方式配置代理，当请求了3000不存在的资源时，那么该请求会转发给5000 （优先匹配前端资源）
+
+
+
+## 方法二
+
+1. 第一步：创建代理配置文件
+
+   ```
+   在src下创建配置文件：src/setupProxy.js
+   ```
+
+2. 编写setupProxy.js配置具体代理规则：
+
+   ```js
+   const {createProxyMiddleware} = require('http-proxy-middleware')
+   module.exports = function(app) {
+     app.use(
+       createProxyMiddleware('/api1', {  //api1是需要转发的请求(所有带有/api1前缀的请求都会转发给5000)
+         target: 'http://localhost:5000', //配置转发目标地址(能返回数据的服务器地址)
+         changeOrigin: true, //控制服务器接收到的请求头中host字段的值
+         /*
+         	changeOrigin设置为true时，服务器收到的请求头中的host为：localhost:5000
+         	changeOrigin设置为false时，服务器收到的请求头中的host为：localhost:3000
+         	changeOrigin默认值为false，但我们一般将changeOrigin值设为true
+         */
+         pathRewrite: {'^/api1': ''} //去除请求前缀，保证交给后台服务器的是正常请求地址(必须配置)
+       }),
+       createProxyMiddleware('/api2', { 
+         target: 'http://localhost:5001',
+         changeOrigin: true,
+         pathRewrite: {'^/api2': ''}
+       })
+     )
+   }
+   ```
+
+说明：
+
+1. 优点：可以配置多个代理，可以灵活的控制请求是否走代理。
+2. 缺点：配置繁琐，前端请求资源时必须加前缀。
+
+### 兄弟之间进行通信
+
+这就要借助消息订阅和发布机制。
+
+举个例子来说就是张三想要跟李四进行通信，张三就需要订阅一个消息【比如A消息】，李四想要给张三数据，就必须发布一个A消息，在发布的同时将数据放入消息中，因为张三订阅了名称为A的消息，此时就能接受到李四发布的消息，从而获取到数据。
+
+这就有点类似于看报纸，甲想要知道每天都发生什么事情，于是订阅了每天日报，乙每天都会发布这个每天日报，因为甲订阅了，于是乙就会每天就给甲方推送，甲方从而获取数据。
+
+1.	工具库: PubSubJS
+2.	下载: npm install pubsub-js --save
+3.	使用: 
+1)	import PubSub from 'pubsub-js' //引入
+2)	PubSub.subscribe('delete', function(data){ }); //订阅
+3)	PubSub.publish('delete', data) //发布消息
+
+### async和await
+
+### fetch
+以前发送请求，使用ajax或者axios，现在还可以使用fetch。这个是window自带的，和xhr是一个级别的。
+
+[fetch](http://www.ruanyifeng.com/blog/2020/12/fetch-tutorial.html)
+
+//发送网络请求 ---使用fecth发送（未优化）
+``` 
+fetch(`/api1/search/users2?q=${keyWord}`).then(
+        response =>{
+          console.log('联系服务器成功了');
+          return response.json()
+        },
+        error => {
+          console.log('联系服务器失败了',error)
+          return new Promise()
+        }
+      ).then(
+          response => {
+            console.log('获取数据成功了',response)
+          },
+          error => {console.log('获取数据失败了',error)}
+        )
+```
+
+//发送网络请求 ---使用fecth发送（优化）
+```
+fetch(`/api1/search/users2?q=${keyWord}`).then(
+  response =>{
+    console.log('联系服务器成功了');
+    return response.json()
+  },
+).then(
+    response => {
+      console.log('获取数据成功了',response)
+    },
+  ).catch(
+    error=>{console.log('请求出错',error)}
+  )
+```
+
+##  React路由
+
+### SPA
+单页Web应用(single page web application，SPA)。整个应用只有一个完整的页面。
+点击页面中的链接不会刷新页面，只会做页面的局部更新。
+数据都需要通过ajax请求获取,并在前端异步展现
+
+#### 1.	什么是路由?
+  1.	一个路由就是一个映射关系(key:value)
+  2.	key为路径, value可能是function或component
+#### 2.	路由分类
+
+1.	后端路由：
+  1)	理解： value是function, 用来处理客户端提交的请求。
+  2)	注册路由： router.get(path, function(req, res))
+  3)	工作过程：当node接收到一个请求时, 根据请求路径找到匹配的路由, 调用路由中的函数来处理请求, 返回响应数据
+2.	前端路由：
+  1)	浏览器端路由，value是component，用于展示页面内容。
+  2)	注册路由: <Route path="/test" component={Test}>
+  3)	工作过程：当浏览器的path变为/test时, 当前路由组件就会变为Test组件
+
+### react-router-dom
+
+react的路由有三类：
+
+web【主要适用于前端】,native【主要适用于本地】,anywhere【任何地方】
+
+在这主要使用web也就是这个标题 react-router-dom
+
+//路由： Route
+//路由器： Router
+
+1.	react的一个插件库。
+2.	专门用来实现一个SPA应用。
+3.	基于react的项目基本都会用到此库。
+
+###  react-router-dom相关API
+
+1.	<BrowserRouter>
+2.	<HashRouter>
+3.	<Route>
+4.	<Redirect>
+5.	<Link>
+6.	<NavLink>
+7.	<Switch>
+其他
+
+1.	history对象
+2.	match对象
+3.	withRouter函数
+
+### 路由的基本使用
+1.明确界面中的导航区、展示区
+2.导航区的a标签为Link标签
+3.展示区写Route标签进行路径的匹配
+< Route path='/xxxx' component={Demo} />
+4.<App>的最外侧包裹了一个<BrowserRouter>或<HashRouter>
+
+
+###  四、路由组件与一般组件
+			1.写法不同：
+						一般组件：<Demo/>
+						路由组件：<Route path="/demo" component={Demo}/>
+			2.存放位置不同：
+						一般组件：components
+						路由组件：pages
+			3.接收到的props不同：
+						一般组件：写组件标签时传递了什么，就能收到什么
+						路由组件：接收到三个固定的属性
+											history:
+														go: ƒ go(n)
+														goBack: ƒ goBack()
+														goForward: ƒ goForward()
+														push: ƒ push(path, state)
+														replace: ƒ replace(path, state)
+											location:
+														pathname: "/about"
+														search: ""
+														state: undefined
+											match:
+														params: {}
+														path: "/about"
+														url: "/about"
+
+
+### NavLink与封装NavLink
+
+	1.NavLink可以实现路由链接的高亮，通过activeClassName指定样式名
+  2.标签体内容是一个特殊的标签属性、
+  3.通过this.props.children可以获取标签体内容
+
+### Switch的使用
+1.通常情况下，path和component是一一对应的关系、
+2.Switch可以提高路由匹配效率（单一匹配）
+
+### 解决多级路径刷新页面样式丢失的问题
+
+1. public/index.html 中引入样式时不写 ./ 写 /(常用)
+2.public/index.html 中引入样式时不写 ./ 写 %PUBLIC_URL%(常用)
+3.使用HashRouter
+
+### 路由的严格匹配与模糊匹配
+1.默认使用的是模糊匹配（简单记：【输入的路径】必须包含要【匹配的路径】，且顺序要一致
+2.开启严格匹配， 如：<Route exact path="/about" component={About} />
+3.严格匹配不要随便开启，需要再开，有些时候开启会导致无法继续匹配二级路由
+
+### Redirect的使用
+
+1.一般写在所有路由注册的最下方，当所有路由都无法匹配时，跳转到Redire指定的路由
+2.具体编码：
+  <Switch>
+    <Route path="/about" component={About} />
+    <Route  path="/home" component={Home} />
+    <Redirect to="/about" />
+  </Switch>
+
+  ### 嵌套路由
+  ```
+   <Switch>
+      <Route path="/home/news" component={News}  />
+      <Route path="/home/message" component={Message}  />
+      <Redirect to="/home/news" />
+    </Switch>
+  ```
+  1.注册子路由时写上父路由的path值
+  2.路由的匹配是按照注册路由的顺序进行的
+
+  ### 向路由组件传递参数
+  1.params 参数
+   路由链接(携带参数):
+   ```
+    <Link to='/demo/test/tom/18'>详情</Link>
+   ```
+   注册路由(声明接收):
+   ```
+   <Route path="/demo/test/:name/:age" component={test} />
+   ```
+   接收参数：
+   ```
+   const {name,title} = this.props.match.params
+   ```
+
+### 使用query-string  插件解析url参数
+1.安装query-string插件
+npm i -save-dev query-string
+在页面引用query-string
+import queryString from 'query-string';
+
+```
+let obj =  {name:'tom',age:18};
+console.log(queryString.stringify(obj),'ooo0');
+//age=18&name=tom
+let str = 'carName=奔驰&price=190'
+console.log(queryString.parse(str),'stroo')
+//{str:'奔驰',age:18}
+
+```
+2.search参数
+路由链接（接待参数）：
+```
+<Link to='/demo/test/?name=tom&age=18' >详情</Link>
+```
+注册路由（无需声明，正常注册即可）：
+```
+<Route path="/demo/test" component={Test} />
+```
+接收参数
+```
+cosnt {search} = this.props.location
+```
+备注：获取到的search是urlencoded编码字符串，需要借助querystring解析
+
+3.state参数
+路由链接（接待参数）：
+```
+<Link to={{path:'/demo/test',state:{name:'tom',age:18} }}>详情</Link>
+```
+注册路由（无需声明，正常注册即可）：
+```
+<Route path="/demo/test" component={Test} />
+```
+接收参数
+```
+this.props.location.state
+``
+备注：刷新也可以保留住参数
+
+### 编程式路由导航
+借助this.props.history对象上的API对操作路由跳转、前进、后退
+-this.props.history.push()
+-this.props.history.replace()
+-this.props.history.goBack()
+-this.props.history.goForward()
+-this.props.history.go()
+
+### BrowserRouter 与HashRouter的区别
+1.底层原理不一样
+BrowserRouter使用的是H5的history API . 不兼容IE9及一下版本
+HashRouter使用的是URL 的哈希值
+
+2. url表现形式不一样
+ BrowserRouter的路径中没有#，例如：localhost:3000/demo/test
+ HashRouter的路径包含#，location:3000/#/demo/test
+
+3. 刷新后多【路由state参数的影响
+（1).BrowserRouter没有任何影响，因为state保存在history对象中
+（2）HashRouter刷新后会导致路哟state参数的丢失
+4.备注：HashRouter可以用于解决一些路径错误相关的问题
+
+
 
