@@ -1394,3 +1394,12 @@ HashRouter使用的是URL 的哈希值
 
 
 
+## antd
+
+1.新建一个项目
+create-react-app antd-demo
+2.进入项目并启动
+cd antd-demo
+npm start
+
+npm run eject  //暴露weakpack配置
