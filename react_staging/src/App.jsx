@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-
+import { SearchOutlined } from '@ant-design/icons';
+// import {Icon} from '@ant-design/icons'
 import { Button } from 'antd';
-import 'antd/dist/antd.min.css'
+// import 'antd/dist/antd.min.css'
 
 export default class App extends Component {
   render() {
@@ -10,6 +11,9 @@ export default class App extends Component {
         App...
         <button>点我</button>
         <Button type="primary">Primary Button</Button>
+        <Button type="primary" shape="circle" icon={<SearchOutlined />} />
+        {/* <Button icon="search">Search</Button> */}
+        {/* <Icon type="step-forward" /> */}
       </div>
     )
   }
