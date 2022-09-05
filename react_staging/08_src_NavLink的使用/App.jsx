@@ -26,7 +26,6 @@ export default class App extends Component {
                 <NavLink activeClassName='atguigu' className="list-group-item" to="/about">About</NavLink>
                 <NavLink activeClassName='atguigu' className="list-group-item" to="/home">Home</NavLink>
 
-
             </div>
           </div>
           <div className="col-xs-6">

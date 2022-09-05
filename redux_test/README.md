@@ -77,3 +77,13 @@ const createStore(allReducer,composeWithDevTools(applyMiddleware(thunk)))
 ### 8.求和案例_react-redux最终版
 (1).所有变量名字要规范，尽量触发对象的简写形式
 (2).reducers文件夹中,编写index.js专门用于汇总并暴露所有的reducer
+
+### 本地打包部署
+ npm run build
+
+ 下载依赖包
+  npm i serve -g
+
+  在其目录下运行
+  serve build
+
